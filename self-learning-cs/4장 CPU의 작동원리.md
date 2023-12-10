@@ -5,7 +5,8 @@
 
 ### ALU 
 
-![스크린샷 2023-12-10 오후 1.31.11.png](..%2F..%2F..%2F..%2F..%2F..%2Fvar%2Ffolders%2F6v%2Fxc5g2yzj3kz4_0m1nmwqz8bc0000gn%2FT%2FTemporaryItems%2FNSIRD_screencaptureui_YCvMqX%2F%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202023-12-10%20%EC%98%A4%ED%9B%84%201.31.11.png)
+<img width="1030" alt="스크린샷 2023-12-10 오후 2 19 12" src="https://github.com/kdg0209/realizers/assets/80187200/1e6cf1a5-a5be-4eff-a0d0-88b488b7f8f4">
+
 
 - 위 그림을 보면 03장에서 명령어가 어떻게 구성되어 있는지 다시 상기할 필요성이 있습니다.
 제어장치가 명령어 레지스터로부터 명령어를 읽어 들이면 제어장치는 ALU에 제어신호를 보내고 ALU는 연산을 하게 됩니다.
@@ -27,7 +28,7 @@
 
 ### 제어장치
 
-![스크린샷 2023-12-10 오후 1.56.43.png](..%2F..%2F..%2F..%2F..%2F..%2Fvar%2Ffolders%2F6v%2Fxc5g2yzj3kz4_0m1nmwqz8bc0000gn%2FT%2FTemporaryItems%2FNSIRD_screencaptureui_TlCAq5%2F%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202023-12-10%20%EC%98%A4%ED%9B%84%201.56.43.png)
+<img width="1019" alt="스크린샷 2023-12-10 오후 2 19 53" src="https://github.com/kdg0209/realizers/assets/80187200/63c8a6dc-72b7-4ab7-891e-10d457534bd7">
 
 - 제어장치란 제어신호를 내보내고, 명령어를 해석하고, 실행하는 장치입니다.
 - 제어장치는 클럭 신호를 받아들입니다.
@@ -54,4 +55,4 @@
    - 프로세스가 실행되는 동안 사용자 모드와 커널 모드가 반복되어 수행되는데, 사용자 모드에서 fopen 함수 등의 프로그램의 자원을 사용할때 system call을 이용해 커널 모드에 요청합니다.
    system call을 받은 커널 모드는 해당 요청에 대한 작업을 완료한 후 system call의 반환값으로 결과값을 되돌려주게 됩니다.
 
-![스크린샷 2023-12-10 오후 2.15.08.png](..%2F..%2F..%2F..%2F..%2F..%2Fvar%2Ffolders%2F6v%2Fxc5g2yzj3kz4_0m1nmwqz8bc0000gn%2FT%2FTemporaryItems%2FNSIRD_screencaptureui_PJV1w6%2F%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202023-12-10%20%EC%98%A4%ED%9B%84%202.15.08.png)
+<img width="1342" alt="스크린샷 2023-12-10 오후 2 20 29" src="https://github.com/kdg0209/realizers/assets/80187200/9ba8a5ca-c82d-4bb0-b265-b3a7ee5d4ed8">
