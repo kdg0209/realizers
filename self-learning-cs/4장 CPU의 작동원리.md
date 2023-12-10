@@ -90,21 +90,22 @@
 - 스택 주소 지정 방식은 스택과 스택 포인터를 이용한 주소 지정 방식입니다.
 - 스택 포인터란 스택의 최상단을 가리키는 레지스터입니다. 즉 스택 포인터란 스택의 최상단 값의 위치를 저장하는 레지스터입니다.
 
-![스크린샷 2023-12-10 오후 3.33.20.png](..%2F..%2F..%2F..%2F..%2F..%2Fvar%2Ffolders%2F6v%2Fxc5g2yzj3kz4_0m1nmwqz8bc0000gn%2FT%2FTemporaryItems%2FNSIRD_screencaptureui_wFe6Yn%2F%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202023-12-10%20%EC%98%A4%ED%9B%84%203.33.20.png)
+<img width="999" alt="스크린샷 2023-12-10 오후 3 56 45" src="https://github.com/kdg0209/realizers/assets/80187200/6f7d61b9-bbe3-478a-95b5-a5968ed7fb91">
 
 ### 변위 주소 지정 방식
 
 - 변위 주소 지정 방식이란 오퍼랜드 필드의 값과 특정 레지스터의 값을 더하여 유효 주소를 얻어내는 주소 지정 방식입니다.
 - 이 방식은 상대 주소 지정 방식과 베이스 레지스터 주소 지정 방식이 있습니다.
 
-![스크린샷 2023-12-10 오후 3.38.56.png](..%2F..%2F..%2F..%2F..%2F..%2Fvar%2Ffolders%2F6v%2Fxc5g2yzj3kz4_0m1nmwqz8bc0000gn%2FT%2FTemporaryItems%2FNSIRD_screencaptureui_fg6sym%2F%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202023-12-10%20%EC%98%A4%ED%9B%84%203.38.56.png)
+<img width="1003" alt="스크린샷 2023-12-10 오후 3 57 11" src="https://github.com/kdg0209/realizers/assets/80187200/c80863fb-deb9-4e70-a01a-44ef0e67ebe4">
 
 #### 상대 주소 지정 방식
 
 - 상대 주소 지정 방식은 오퍼랜드와 프로그램 카운터의 값을 더하여 메모리의 유효 주소를 얻는 방법입니다.
 - 오퍼랜드가 음수라면 프로그램 카운터로부터 이전이며, 오퍼랜드가 양수라면 프로그램 카운터로부터 이후로 접근합니다.
 
-![스크린샷 2023-12-10 오후 3.42.18.png](..%2F..%2F..%2F..%2F..%2F..%2Fvar%2Ffolders%2F6v%2Fxc5g2yzj3kz4_0m1nmwqz8bc0000gn%2FT%2FTemporaryItems%2FNSIRD_screencaptureui_sg0a81%2F%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202023-12-10%20%EC%98%A4%ED%9B%84%203.42.18.png)
+
+<img width="1011" alt="스크린샷 2023-12-10 오후 3 57 31" src="https://github.com/kdg0209/realizers/assets/80187200/d2b4429a-8d74-406c-b7a3-01b1cd173a8b">
 
 #### 베이스 레지스터 주소 지정 방식
 
@@ -112,7 +113,7 @@
 - 베이스 레지스터는 '기준 주소', 오퍼랜드는 '기준 주소로부터 떨어진 거리' 로서의 역할을 합니다.
 - 즉 베이스 레지스터 주소 지정 방식은 베이스 레지스터 속 기준 주소로부터 얼마나 떨어져 있는 주소에 접근할 것인지 연산하여 유효 주소를 얻어내는 방식입니다.
 
-![스크린샷 2023-12-10 오후 3.50.43.png](..%2F..%2F..%2F..%2F..%2F..%2Fvar%2Ffolders%2F6v%2Fxc5g2yzj3kz4_0m1nmwqz8bc0000gn%2FT%2FTemporaryItems%2FNSIRD_screencaptureui_gFbrH1%2F%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202023-12-10%20%EC%98%A4%ED%9B%84%203.50.43.png)
+<img width="1017" alt="스크린샷 2023-12-10 오후 3 57 55" src="https://github.com/kdg0209/realizers/assets/80187200/526b11a2-7fb0-4dc1-8868-6f7297f8224d">
 
 <br>
 <br>
