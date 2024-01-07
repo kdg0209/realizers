@@ -19,7 +19,7 @@
 
 ### 스케줄링 큐
 
-![스크린샷 2024-01-07 오후 2.35.13.png](..%2F..%2F..%2F..%2F..%2F..%2Fvar%2Ffolders%2F6v%2Fxc5g2yzj3kz4_0m1nmwqz8bc0000gn%2FT%2FTemporaryItems%2FNSIRD_screencaptureui_U5ezFI%2F%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202024-01-07%20%EC%98%A4%ED%9B%84%202.35.13.png)
+<img width="943" alt="스크린샷 2024-01-07 오후 3 27 34" src="https://github.com/kdg0209/realizers/assets/80187200/e055ce27-1df1-462a-91b3-46a503ebc9e9">
 
 ### 선점형과 비선점형 스케줄
 
@@ -123,9 +123,9 @@
 
 - 우선순위가 낮은 큐에 적재되어 있는 프로세스들에 기아 현상이 발생할 수 있습니다.
 
+<img width="1135" alt="스크린샷 2024-01-07 오후 3 28 00" src="https://github.com/kdg0209/realizers/assets/80187200/ddaac566-97d0-4144-8d6f-4ca28cb0548e">
 
-![스크린샷 2024-01-07 오후 3.17.52.png](..%2F..%2F..%2F..%2F..%2F..%2Fvar%2Ffolders%2F6v%2Fxc5g2yzj3kz4_0m1nmwqz8bc0000gn%2FT%2FTemporaryItems%2FNSIRD_screencaptureui_og3xPy%2F%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202024-01-07%20%EC%98%A4%ED%9B%84%203.17.52.png)
-
+<br>
 <br>
 
 ### 다단계 피드백 큐 스케줄링
@@ -136,8 +136,7 @@
 - 프로세스 생성시 우선순위가 가장 높은 큐에 적재됩니다. 그리고 해당 프로세스는 선입 선출 순서로 CPU 자원을 이용하게 됩니다. 그리고 해당 큐의 CPU 시간 할당량이 끝나면 한 단계 아래 큐로 적재됩니다.
 - 프로세스들은 큐 사이를 이동할 수 있기 때문에 낮은 우선순위 큐에서 너무 오래 기다리고 있는 프로세스가 있다면 점차 우선순위가 높은 큐로 이동시키는 에이징 기법을 적용하여 기아 현상을 예방할 수 있습니다.
 
-![스크린샷 2024-01-07 오후 3.25.34.png](..%2F..%2F..%2F..%2F..%2F..%2Fvar%2Ffolders%2F6v%2Fxc5g2yzj3kz4_0m1nmwqz8bc0000gn%2FT%2FTemporaryItems%2FNSIRD_screencaptureui_WfXVcY%2F%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202024-01-07%20%EC%98%A4%ED%9B%84%203.25.34.png)
-
+<img width="670" alt="스크린샷 2024-01-07 오후 3 28 16" src="https://github.com/kdg0209/realizers/assets/80187200/b18afa91-adc4-4105-9e20-d98dd5add43a">
 
 <br>
 <br>
