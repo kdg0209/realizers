@@ -1,0 +1,4 @@
+Ä14:59:59.719 [Test worker] DEBUG org.springframework.web.client.RestTemplate - HTTP GET http://localhost:8080/hello?name=Spring
+é14:59:59.733 [Test worker] DEBUG org.springframework.web.client.RestTemplate - Accept=[text/plain, application/json, application/*+json, */*]
+_14:59:59.760 [Test worker] DEBUG org.springframework.web.client.RestTemplate - Response 200 OK
+ê14:59:59.763 [Test worker] DEBUG org.springframework.web.client.RestTemplate - Reading to [java.lang.String] as "text/plain;charset=ISO-8859-1"
