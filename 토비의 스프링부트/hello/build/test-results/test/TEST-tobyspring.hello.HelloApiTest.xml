@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="tobyspring.hello.HelloApiTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2024-06-05T05:59:59" hostname="gimdong-gyun-ui-MacBookPro.local" time="0.412">
+  <properties/>
+  <testcase name="helloApi()" classname="tobyspring.hello.HelloApiTest" time="0.412"/>
+  <system-out><![CDATA[14:59:59.719 [Test worker] DEBUG org.springframework.web.client.RestTemplate - HTTP GET http://localhost:8080/hello?name=Spring
+14:59:59.733 [Test worker] DEBUG org.springframework.web.client.RestTemplate - Accept=[text/plain, application/json, application/*+json, */*]
+14:59:59.760 [Test worker] DEBUG org.springframework.web.client.RestTemplate - Response 200 OK
+14:59:59.763 [Test worker] DEBUG org.springframework.web.client.RestTemplate - Reading to [java.lang.String] as "text/plain;charset=ISO-8859-1"
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
