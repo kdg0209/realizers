@@ -139,9 +139,76 @@ public class Main {
 - 공정 모드는 락을 요청한 순서대로 스레드가 락을 획득할 수 있게 됩니다. 이는 먼저 대기한 스레드가 락을 획득하게 되어 스레드 간 공정성을 보장합니다. 하지만 비공정 모드에 비해 성능이 저하됩니다.
 - tryLock() 메서드는 공정성을 따르지 않고 대기열에서 대기중인 스레드와 상관없이 락을 즉시 획득하며, tryLock(long time, TimeUnit unit) 메서드의 경우는 공정성을 따르게 됩니다.
 
+<br>
 
+### ReentrantLock 대기 중단
 
+- ReentrantLock을 사용하면 락을 무한 대기하지 않고, 중간에 빠져나오는 것이 가능합니다. 심지어 락을 얻을 수 없다면 즉시 빠져나오는것도 가능합니다.
 
+#### tryLock()
+
+- 락 획득을 시도하고, 즉시 성공 여부를 반환합니다. 만약 다른 스레드가 락을 획득했다면 false를 반환하고, 그렇지 않다면 true를 반환합니다.
+
+```java
+public class BankAccountV2 implements BankAccount {
+
+    private int balance;
+    private final ReentrantLock lock = new ReentrantLock();
+
+    public BankAccountV2(int balance) {
+        this.balance = balance;
+    }
+
+    @Override
+    public boolean withdraw(int amount) {
+        if (!lock.tryLock()) {
+            System.out.println("이미 처리중인 작업이 있습니다.");
+            return false;
+        }
+
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {}
+        
+        this.balance -= amount;
+        System.out.println("출금 성공: " + this.balance);
+        return true;
+    }
+
+    @Override
+    public int getBalance() {
+        return this.balance;
+    }
+}
+
+public class Main {
+
+    public static void main(String[] args) throws InterruptedException {
+        BankAccount bankAccount = new BankAccountV2(1000);
+        Thread threadA = new Thread(new WithdrawTask(bankAccount, 800));
+        Thread threadB = new Thread(new WithdrawTask(bankAccount, 800));
+
+        threadA.start();
+        threadB.start();
+
+        threadA.join();
+        threadB.join();
+
+        System.out.println("결과: " + bankAccount.getBalance());
+    }
+}
+
+// 결과 
+이미 처리중인 작업이 있습니다.
+출금 성공: 200
+결과: 200
+```
+
+<br>
+
+#### tryLock(long time, TimeUnit unit)
+
+- 주어진 시간동안 락 획득을 시도합니다. 동작 방식은 tryLock() 메서드와 동일하지만 추가적으로 이 메서드를 사용할 때 인터럽트가 걸리면 InterruptedException 예외가 발생하고 락 획득을 포기하게 됩니다.
 
 
 <br>
