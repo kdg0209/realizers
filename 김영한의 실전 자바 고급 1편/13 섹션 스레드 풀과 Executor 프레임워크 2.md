@@ -184,13 +184,135 @@ task-8 -> 예외 발생함
 - 위 예제에서 queue의 사이즈가 3이고, 기본 스레드 수가 3이며, 초과 스레드 수가 4개 일때, task-1 ~ task-3까지는 기본 스레드가 작업을 수행하며 task-4 ~ task-6은 queue에 담기게 됩니다. 이후에 task-7이 들어오면 queue 또한 꽉 찬 상태이기 때문에 초과 스레드가 1개 더 만들어지는 것입니다.
 그 후 task-8이 들어오면 초과 스레드의 범위를 넘어서기 때문에 reject 예외가 발생하게 되는것입니다.
 
+<br>
 
+### Excutor 고정 풀 전략
 
+- newFixedThreadPool을 통해 고정 풀 전략을 사용할 수 있으며, 스레드 풀에 기본 설정만큼의 스레드를 생성하고, 초과 스레드는 생성하지 않습니다.
+- 스레드 수가 고정되어 있기 때문에 CPU와 메모리 리스소가 예측 가능한 안정적인 방식입니다.
 
+#### 예제 코드
 
+- 기본 스레드 수를 2개로 지정하면, 초과 스레드 수 또한 2개가 됩니다. 이때 작업을 6개를 준다면 task-0, task-1는 스레드 두 개에 의해 작업이 시작되며, 나머지 task-2 ~ task-5는 queue에서 대기하게 되고, 이후 스레드가 작업을 완료하면 queue에서 task를 가져가게 됩니다.
 
+```java
+public class Main {
 
+    public static void main(String[] args) {
+        ExecutorService es = Executors.newFixedThreadPool(2);
 
+        for (int i = 0; i < 6; i++) {
+            String taskName = "task-" + i;
+            es.submit(new Task(1000));
+            printState(es, taskName);
+        }
+    }
+
+    static class Task implements Runnable {
+
+        private final int sleepMs;
+
+        public Task(int sleepMs) {
+            this.sleepMs = sleepMs;
+        }
+
+        @Override
+        public void run() {
+            try {
+                Thread.sleep(sleepMs);
+            } catch (InterruptedException e) {}
+        }
+    }
+
+    private static void printState(ExecutorService executorService, String taskName) {
+        if (executorService instanceof ThreadPoolExecutor poolExecutor) {
+            int poolSize = poolExecutor.getPoolSize();
+            int activeCount = poolExecutor.getActiveCount();
+            int queueSize = poolExecutor.getQueue().size();
+            long completedTaskCount = poolExecutor.getCompletedTaskCount();
+
+            System.out.println(taskName + " -> [poolSize= " + poolSize + ", activeCount= " + activeCount + ", queueSize= " + queueSize + ", completedTaskCount= " + completedTaskCount + "]");
+        }
+    }
+}
+
+// 결과
+task-0 -> [poolSize= 1, activeCount= 1, queueSize= 0, completedTaskCount= 0]
+task-1 -> [poolSize= 2, activeCount= 2, queueSize= 0, completedTaskCount= 0]
+task-2 -> [poolSize= 2, activeCount= 2, queueSize= 1, completedTaskCount= 0]
+task-3 -> [poolSize= 2, activeCount= 2, queueSize= 2, completedTaskCount= 0]
+task-4 -> [poolSize= 2, activeCount= 2, queueSize= 3, completedTaskCount= 0]
+task-5 -> [poolSize= 2, activeCount= 2, queueSize= 4, completedTaskCount= 0]
+```
+
+<br>
+
+### Excutor 캐싱 풀 전략
+
+- newCachedThreadPool은 기본 스레드를 사용하지 않고, 60초 생존 주기를 가진 초과 스레드만 사용합니다.
+- 초과 스레드 수에는 제한이 없습니다.
+- 큐에 작업을 저장하지 않고, 스레드가 받아서 바로 처리합니다. 즉 모든 요청이 대기하지 않고 스레드가 바로바로 처리하기 때문에 성능이 빠릅니다.
+
+#### 예제 코드
+
+- 로그를 보면 poolSize=1000, activeCount=1000인 걸 볼 수 있으며, 이것은 스레드가 요청을 받을때마다 생성이 된다는 것을 알 수 있습니다.
+
+```java
+public class Main {
+
+    public static void main(String[] args) {
+        ExecutorService es = Executors.newCachedThreadPool();
+
+        for (int i = 0; i < 1000; i++) {
+            String taskName = "task-" + i;
+            es.submit(new Task(1000));
+            printState(es, taskName);
+        }
+    }
+
+    static class Task implements Runnable {
+
+        private final int sleepMs;
+
+        public Task(int sleepMs) {
+            this.sleepMs = sleepMs;
+        }
+
+        @Override
+        public void run() {
+            try {
+                Thread.sleep(sleepMs);
+            } catch (InterruptedException e) {}
+        }
+    }
+
+    private static void printState(ExecutorService executorService, String taskName) {
+        if (executorService instanceof ThreadPoolExecutor poolExecutor) {
+            int poolSize = poolExecutor.getPoolSize();
+            int activeCount = poolExecutor.getActiveCount();
+            int queueSize = poolExecutor.getQueue().size();
+            long completedTaskCount = poolExecutor.getCompletedTaskCount();
+
+            System.out.println(taskName + " -> [poolSize= " + poolSize + ", activeCount= " + activeCount + ", queueSize= " + queueSize + ", completedTaskCount= " + completedTaskCount + "]");
+        }
+    }
+}
+
+// 결과
+task-995 -> [poolSize= 996, activeCount= 996, queueSize= 0, completedTaskCount= 0]
+task-996 -> [poolSize= 997, activeCount= 997, queueSize= 0, completedTaskCount= 0]
+task-997 -> [poolSize= 998, activeCount= 998, queueSize= 0, completedTaskCount= 0]
+task-998 -> [poolSize= 999, activeCount= 999, queueSize= 0, completedTaskCount= 0]
+task-999 -> [poolSize= 1000, activeCount= 1000, queueSize= 0, completedTaskCount= 0]
+```
+
+#### 🧨 문제점
+
+- 트래픽이 한 순간에 몰린다면 그 만큼의 스레드가 생성이 되는데, 이 때 CPU와 메모리 사용량이 급증하기 때문에 시스템이 다운될 가능성이 발생합니다.
+
+<br>
+
+### Excutor 사용자 정의 풀 전략
 
 
 
