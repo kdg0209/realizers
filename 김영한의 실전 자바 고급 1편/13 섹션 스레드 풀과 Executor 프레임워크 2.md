@@ -314,17 +314,288 @@ task-999 -> [poolSize= 1000, activeCount= 1000, queueSize= 0, completedTaskCount
 
 ### Excutor 사용자 정의 풀 전략
 
+#### 예제 코드
 
+- ThreadPoolExecutor 설정을 corePoolSize를 100개, maximumPoolSize를 200개, keepAliveTime을 1초, queue 사이즈를 1000로 설정하였습니다.
+- corePoolSize의 설정 100을 통해서 기본 스레드 수를 100 유지합니다. 그리고 queue의 사이즈를 1000개로 설정합으로써 기본 스레드가 다 작업중이라면 요청들은 우선 queue에 담기게 되며, queue 사이즈가 꽉 차면 그제서야 maximumPoolSize을 설정한 스레드 100개들이 활성화됩니다. 왜 200이 아니고 100이냐면 (maximumPoolSize - corePoolSize)를 계산하면 100이기 때문입니다.
+- 그리고 해당 설정을 통해 한 번에 받을 수 있는 작업의 총량은 queue 사이즈 + maximumPoolSize 입니다.(즉 1200), 한 번에 1200개의 작업이 넘어간다면 RejectedExecutionException가 발생하며, 아래 예제에서 볼 수 있듯이 task-1201은 예외가 발생한 것을 확인할 수 있습니다.
 
+```java
+public class MainV2 {
 
+//    private static final int TASK_SIZE = 1000; 
+//    private static final int TASK_SIZE = 1100; 
+//    private static final int TASK_SIZE = 1200;
+    private static final int TASK_SIZE = 1201; // RejectedExecutionException 발생
 
+    public static void main(String[] args) {
+        ExecutorService es = new ThreadPoolExecutor(100, 200, 60, TimeUnit.SECONDS, new ArrayBlockingQueue<>(1000));
 
+        long startMs = System.currentTimeMillis();
 
+        for (int i = 1; i <= TASK_SIZE; i++) {
+            String taskName = "task-" + i;
+            try {
+                es.submit(new Task());
+                printState(es, taskName);
+            } catch (RejectedExecutionException e) {
+                System.err.println(taskName + " -> " + e);
+            }
+        }
 
+        System.out.println("endMs: " + (System.currentTimeMillis() - startMs));
+    }
 
+    static class Task implements Runnable {
 
+        @Override
+        public void run() {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {}
+        }
+    }
 
+    public static void printState(ExecutorService executorService, String taskName) {
+        if (executorService instanceof ThreadPoolExecutor poolExecutor) {
+            int poolSize = poolExecutor.getPoolSize();
+            int activeCount = poolExecutor.getActiveCount();
+            int queueSize = poolExecutor.getQueue().size();
+            long completedTaskCount = poolExecutor.getCompletedTaskCount();
 
+            System.out.println(taskName + " -> [poolSize= " + poolSize + ", activeCount= " + activeCount + ", queueSize= " + queueSize + ", completedTaskCount= " + completedTaskCount + "]");
+        } else {
+            System.out.println(executorService);
+        }
+    }
+}
+
+// 결과
+task-1200 -> [poolSize= 200, activeCount= 200, queueSize= 1000, completedTaskCount= 0]
+task-1201 -> java.util.concurrent.RejectedExecutionException: Task java.util.concurrent.FutureTask@4567f35d[Not completed, task = java.util.concurrent.Executors$RunnableAdapter@6356695f[Wrapped task = section11.MainV2$Task@4f18837a]] rejected from java.util.concurrent.ThreadPoolExecutor@3d8c7aca[Running, pool size = 200, active threads = 200, queued tasks = 1000, completed tasks = 0]
+```
+
+<br>
+
+#### 🧨 실무에서 하는 실수
+
+- 아래는 queue의 사이즈를 지정하지 않았습니다. 즉 사용자의 요청을 무한대로 처리할 수 있긴 하지만, 시스템이 어느정도 감당할 수 있는지, 지금 상황이 긴급상황인지 파악할 수 없기 때문에 항상 queue의 사이즈를 지정하여 사용하도록 해야합니다.
+
+```java
+ExecutorService es = new ThreadPoolExecutor(100, 200, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+```
+
+<br>
+
+## Excutor 예외 정책
+
+- ThreadPoolExecutor에 요청할 때 queue도 꽉 차고, 초과 스레드도 더 이상 할당할 수 없다면 예외가 발생합니다.
+
+### AbortPolicy
+
+- 새로운 작업을 제출할 때 RejectedExecutionException 예외가 발생합니다. (기본 정책입니다.)
+- 한 번에 120개까지 처리할 수 있지만 121번째 요청이 전달되면 예외가 발생합니다.
+
+```java
+public class Main {
+
+    private static final int TASK_SIZE = 121; // RejectedExecutionException 발생
+
+    public static void main(String[] args) {
+        ExecutorService es = new ThreadPoolExecutor(10, 20, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100), new ThreadPoolExecutor.AbortPolicy());
+
+        for (int i = 1; i <= TASK_SIZE; i++) {
+            String taskName = "task-" + i;
+            try {
+                es.submit(new Task(taskName));
+            } catch (RejectedExecutionException e) {
+                System.err.println(taskName + " -> " + e);
+            }
+        }
+    }
+
+    static class Task implements Runnable {
+
+        private final String name;
+
+        public Task(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public void run() {
+            try {
+                System.out.println(name + ": 실행");
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {}
+        }
+    }
+}
+
+task-121 -> java.util.concurrent.RejectedExecutionException: Task java.util.concurrent.FutureTask@4883b407[Not completed, task = java.util.concurrent.Executors$RunnableAdapter@39c0f4a[Wrapped task = section11.AbortPolicyMain$Task@1794d431]] rejected from java.util.concurrent.ThreadPoolExecutor@5ebec15[Running, pool size = 20, active threads = 20, queued tasks = 100, completed tasks = 0]
+```
+
+<br>
+
+### DiscardPolicy
+
+- 새로운 작업들을 버립니다.
+- DiscardPolicy 클래스의 rejectedExecution 메서드를 보면 내부에서 아무 행위도 하지 않는걸 볼 수 있습니다.
+
+```java
+public class Main {
+
+    private static final int TASK_SIZE = 121; 
+
+    public static void main(String[] args) {
+        ExecutorService es = new ThreadPoolExecutor(10, 20, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100), new ThreadPoolExecutor.DiscardPolicy());
+
+        for (int i = 1; i <= TASK_SIZE; i++) {
+            String taskName = "task-" + i;
+            try {
+                es.submit(new Task(taskName));
+            } catch (RejectedExecutionException e) {
+                System.err.println(taskName + " -> " + e);
+            }
+        }
+    }
+
+    static class Task implements Runnable {
+
+        private final String name;
+
+        public Task(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public void run() {
+            try {
+                System.out.println(name + ": 실행");
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {}
+        }
+    }
+}
+
+// DiscardPolicy의 내부
+public static class DiscardPolicy implements RejectedExecutionHandler {
+
+    public DiscardPolicy() { }
+
+    public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
+
+    }
+}
+```
+
+<br>
+
+### CallerRunsPolicy
+
+- 새로운 작업을 제출한 스레드가 대신해서 작업을 처리합니다.
+- 아래 로그를 보면 121 번째 작업은 메인 스레드에 의해 수행된 것을 알 수 있습니다.
+
+```java
+public class Main {
+
+    private static final int TASK_SIZE = 121; 
+
+    public static void main(String[] args) {
+        ExecutorService es = new ThreadPoolExecutor(10, 20, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100), new ThreadPoolExecutor.CallerRunsPolicy());
+
+        for (int i = 1; i <= TASK_SIZE; i++) {
+            String taskName = "task-" + i;
+            try {
+                es.submit(new Task(taskName));
+            } catch (RejectedExecutionException e) {
+                System.err.println(taskName + " -> " + e);
+            }
+        }
+    }
+
+    static class Task implements Runnable {
+
+        private final String name;
+
+        public Task(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public void run() {
+            try {
+                System.out.println("[" + Thread.currentThread().getName() + " -> " + name + ": 살행]");
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {}
+        }
+    }
+}
+
+[pool-1-thread-16 -> task-116: 살행]
+[main -> task-121: 살행]
+[pool-1-thread-18 -> task-118: 살행]
+[pool-1-thread-20 -> task-120: 살행]
+```
+
+<br>
+
+### 사용자 정의 정책
+
+- 개발자가 직접 정의한 거절 정책을 사용할 수 있습니다.
+- 거절된 작업을 버리지만, 대신 로그를 남겨 개발자가 문제 상황을 인지할 수 있도록 합니다.
+- MyRejectedExecutionHandler 클래스를 만든 후 RejectedExecutionHandler 인터페이스의 rejectedExecution 메서드를 구현한 뒤 ThreadPoolExecutor 선언시 마지막에 해당 클래스를 매개변수로 넘겨주었습니다.
+
+```java
+public class Main {
+
+    private static final int TASK_SIZE = 121;
+
+    public static void main(String[] args) {
+        ExecutorService es = new ThreadPoolExecutor(10, 20, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<>(100), new MyRejectedExecutionHandler());
+
+        for (int i = 1; i <= TASK_SIZE; i++) {
+            String taskName = "task-" + i;
+            try {
+                es.submit(new Task(taskName));
+            } catch (RejectedExecutionException e) {
+                System.err.println(taskName + " -> " + e);
+            }
+        }
+    }
+
+    static class MyRejectedExecutionHandler implements RejectedExecutionHandler {
+
+        private static AtomicInteger count = new AtomicInteger(0);
+
+        @Override
+        public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+            int i = count.incrementAndGet();
+            System.out.println("[경고] 누적된 작업 수: " + i);
+        }
+    }
+
+    static class Task implements Runnable {
+
+        private final String name;
+
+        public Task(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public void run() {
+            try {
+                System.out.println("[" + Thread.currentThread().getName() + " -> " + name + ": 살행]");
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {}
+        }
+    }
+}
+
+[경고] 누적된 작업 수: 1
+[pool-1-thread-14 -> task-114: 살행]
+```
 
 
 
