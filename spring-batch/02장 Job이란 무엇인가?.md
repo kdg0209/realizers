@@ -272,6 +272,71 @@ public class ProductJobConfiguration extends DefaultBatchConfiguration {
 <br>
 <br>
 
+## 5. JobRepository란 무엇인가?
+
+### 기본 개념
+
+- 배치 작업 중의 정보를 저장하는 저장소의 역할을 수행합니다.
+- Job이 언제 수행되었고, 언제 끝났으며, 몇 번이 실행되었고, 실행에 대한 결과 등의 배치 작업의 수행과 관련된 모든 메타데이터를 저장합니다.
+
+<img width="1032" alt="스크린샷 2024-08-31 오후 3 51 08" src="https://github.com/user-attachments/assets/a184660e-4991-4a15-b02c-4682471f8b56">
+
+<br>
+<br>
+
+## 6. JobLauncher란 무엇인가?
+
+### 기본 개념
+
+- Job을 실행시키는 역할을 수행합니다.
+- Job과 JobParameter를 인자로 받으며 요청한 배치 작업을 수행한 뒤 최종 클라이언트에게 JobExecution을 반환합니다.
+
+<br>
+
+### Job의 실행
+
+#### 동기적 실행
+
+- taskExecutor를 SyncTaskExecutor로 설정할 경우입니다.
+- JobExecution을 획득하고 배치처리를 최종 완료한 후 클라이언트에게 JobExecution을 반환할 때입니다.
+- 스케줄러에 의한 배치처리에 적합합니다.
+
+#### 동기적 실행의 흐름
+
+```mermaid
+sequenceDiagram
+    Client->>+JobLauncher: run()
+    JobLauncher-->+Job: execute()
+    Job-->+Business: 비지니스 로직 수행
+    Business-->-Job: 
+    Job-->-JobLauncher: ExitStatus
+    JobLauncher-->-Client: JobExecution 반환
+```
+
+
+#### 비동기적 실행
+
+- taskExecutor가 SimpleASyncTaskExecutor로 설정할 경우입니다.
+- JobExecution을 획득한 후 클라이언트에게 바로 JobExecution을 반환하고 이후에 배치처리를하는 경우입니다.
+- HTTP 요청에 의한 배치처리에 적합합니다. (배치처리 시간이 길 경우 응답이 늦어지지 않도록 하기 위함입니다.)
+
+#### 비동기적 실행의 흐름
+
+- 비동기적 실행에서는 우선 JobLauncher는 클라이언트에게 바로 JobExecution를 반환하게 됩니다. 이때 JobExecution의 ExitStatus 상태는 UNKNOWN이게 됩니다.
+
+```mermaid
+sequenceDiagram
+    Client->>+JobLauncher: run()
+    JobLauncher-->+Client: 바로 JobExecution 반환 (ExitStatus.UNKNOWN)
+    JobLauncher-->+Job: 내부적으로 execute() 호출
+    Job-->+Business: 비지니스로직 수행
+    Business-->-Job: 
+    Job-->-JobLauncher: ExitStatus 반환
+```
+
+<br>
+<br>
+
 #### 참고
 
 - https://jojoldu.tistory.com/490 (JobParameter 활용 방법에 대한 글입니다.)
