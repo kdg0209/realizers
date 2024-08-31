@@ -251,18 +251,30 @@ public class ProductJobConfiguration extends DefaultBatchConfiguration {
 }
 ```
 
+<br>
 
+## 4. JobExecution란 무엇인가?
 
+### 기본 개념
 
+- JobInstance가 실행 중에 발생하는 정보들을 저장하고 있는 객체입니다.
+  - 시작시간, 종료시간, 상태의 정보를 가지고 있습니다.
+- JobExecution는 FAILED 또는 COMPLETED 등의 Job 실행 결과 상태를 가지고 있습니다.
+- JobExecution의 상태가 COMPLETED라면 실행이 완료된 것으로 간주하여 재실행이 불가능합니다.
+- JobExecution의 상태가 FAILED라면 실패한것으로 간주하여 재실행 가능합니다. 즉 COMPLETED될 때까지 재시도할 수 있습니다.
 
+<br>
 
+### 흐름도
 
+<img width="1042" alt="스크린샷 2024-08-31 오후 12 29 56" src="https://github.com/user-attachments/assets/2b764116-519b-4b37-939a-bf22b1626209">
 
-
+<br>
 <br>
 
 #### 참고
 
 - https://jojoldu.tistory.com/490 (JobParameter 활용 방법에 대한 글입니다.)
+
 
 
