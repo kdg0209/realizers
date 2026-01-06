@@ -4,9 +4,9 @@
 
 <br>
 
-## 2-1. Flink의 아키텍처
+## 1. Flink의 아키텍처
 
-### 1. JobManager
+### 1-1. JobManager
 
 #### 역할
 
@@ -34,7 +34,7 @@
 
 <br>
 
-### 2. TaskManager
+### 1-2. TaskManager
 
 #### 역할
 
@@ -69,7 +69,7 @@
 
 <br>
 
-### 3. JobClient
+### 1-3. JobClient
 
 #### 역할
 
@@ -89,22 +89,92 @@
 
 <br>
 
-## 3. State Backend
+## 2. State Backend
 
+- `State Backend`란 스트림 처리에서 연산 결과로 유지되는 상태(`state`)를 어떻게 저장/복구/관리할지 정의하는 구성 요소
+- `State Backend`는 체크포인트 시 상태를 어떤 방식의 스냅샷으로 저장할지 정의
 
+<img width="1032" height="604" alt="스크린샷 2026-01-06 오후 9 11 43" src="https://github.com/user-attachments/assets/6af92564-fbd8-47ff-97d6-6bb0ad22ea8f" />
 
+<br>
+<br>
 
+### 2-1. HashMapStateBackend
 
+- 상태를 JVM Heap에 Java 객체로 저장하는 방식
+- 메모리에 올려놓기 때문에 빠르지만 메모리 크기와 GC에 직접적인 영향 받음
+- 상태를 거의 저장하지 않는 환경에서 유리하지만 상태가 점점 커져 집계 또는 윈도우 처리를 해야하는 경우 부적합 (대규모 상태를 저장하는 운영 환경에는 부적합할 수 있음)
 
+<br>
 
+### 2-2. EmbeddedRocksDBStateBackend
 
+- 상태를 `TaskManager`의 로컬 디스크의 `RocksDB`에 저장하는 방식
+- 모든 상태는 직렬화된 byte 배열 형태로 저장되며, 필요할 경우 역직렬화하여 사용
+- RocksDB 기반 상태는 `incremental checkpoint`를 통해 대규모 상태에서 체크포인트 비용을 줄일 수 있음
+- 직렬화/역직렬화시 비용과 압축으로 인해 디스크 I/O 발생
 
+<br>
 
+### 2-3. ForStStateBackend
 
+- ForStStateBackend는 RocksDBStateBackend를 대체하기 위한 Flink-native embedded state engine
+- 상태는 `TaskManager`의 로컬 디스크에 `LSM-tree` 구조로 저장되며, 체크포인트 시 상태 스냅샷이 원격 저장소(S3, HDFS)에 저장
 
+#### 📌 중요한 점
 
+- 상태를 원격 저장소에 직접 두는게 아니라 상태는 여전히 `TaskManager`의 로컬 디스크에 위치해 있음
+- 정리하자면, 상태는 `TaskManager`의 로컬 디스크에 있으며, 원격 저장소에는 체크포인트의 스냅샷이 저장되어 있음. 장애 발생 시 스냅샷을 다운로드하여 상태를 복원하는 것임
 
+#### 💡 ForStStateBackend의 등장 배경
 
+- [등장 배경](https://nightlies.apache.org/flink/flink-docs-master/docs/ops/state/disaggregated_state/)
+- 로컬 디스크의 제약 조건
+- 급격한 리소스 사용량 증가
+- 대용량 복구
 
+<br>
+
+## 3. Checkpoint와 Savepoint
+
+- Checkpoint는 장애 복구를 위한 스냅샷이고, Savepoint는 운영·배포를 위한 사용자가 명시적으로 생성한 스냅샷
+
+### 3-1. Checkpoint란?
+
+#### 정의
+
+- 장애 복구를 위해 Flink가 자동으로 주기적으로 생성하는 상태 스냅샷
+- 장애 복구에 활용
+  - TaskManager 장애 발생 → Flink가 자동으로 마지막 체크포인트 복원 → 사용자 개입 없음
+
+<br>
+
+### 3-2. Savepoint란?
+
+#### 정의
+
+- 운영자가 명시적(수동)으로 트리거하는 상태 스냅샷
+- Job을 의도적으로 중단/재시작/업그레이드할 때 사용
+- 운영·배포에 활용(애플리케이션 재시작 시)
+  - Savepoint 생성 → Job 중단 → 배포 → Savepoint로 Job 재시작
+
+<br>
+
+## 4. Dataflow
+
+<br>
+
+## 5. Failover & Restart 아키텍처
+
+<br>
+
+## 6. Time & Watermark 아키텍처
+
+<br>
+
+#### 참고
+
+- https://nightlies.apache.org/flink/flink-docs-master/docs/ops/state/state_backends/
+- https://nightlies.apache.org/flink/flink-docs-master/docs/ops/state/disaggregated_state/
 
 
