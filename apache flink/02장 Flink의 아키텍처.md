@@ -138,6 +138,7 @@
 ## 3. Checkpoint와 Savepoint
 
 - Checkpoint는 장애 복구를 위한 스냅샷이고, Savepoint는 운영·배포를 위한 사용자가 명시적으로 생성한 스냅샷
+- Checkpoint와 Savepoint 매커니즘은 비동기 방식으로 애플리케이션이 이벤트를 계속 처리하는 동안 **모든 작업을 중지**하지 않고 상태의 스냅샷 찍음
 
 ### 3-1. Checkpoint란?
 
@@ -160,11 +161,72 @@
 
 <br>
 
-## 4. Dataflow
+## 4. Data Flow
+
+- Flink의 DataFlow란 Source로부터 데이터를 읽어 변환(`Transformation`)을 거쳐 싱크(`Sink`)로 보내는 일련의 연속적인 데이터 처리 파이프라인
+
+#### Source
+
+- 외부로부터 데이터를 읽어오는 역할
+- 장애 복구를 위해 어디까지 읽었는지 상태(`state`)를 관리
+- 장애 발생 시 마지막 성공한 체크포인트 기준으로 데이터를 다시 읽음
+
+#### Transformation
+
+- Source에서 읽은 데이터를 가공, 변환, 집계
+
+#### Sink
+
+- 처리된 데이터를 외부 시스템으로 전달
 
 <br>
 
 ## 5. Failover & Restart 아키텍처
+
+### 5-1. Task Failure Recovery
+
+- Flink는 Task 단위의 실패를 감지하고, 데이터의 일관성을 해치지 않는 최소 범위만 재시작하는 방식으로 장애 복구
+- 쉽게 표현하자면, Flink는 작업을 정상 상태로 복구하기 위해 오류가 발생한 작업과 영향을 받는 다른 작업을 다시 시작
+
+<br>
+
+### 5-2. Failover Region
+
+- `Failover Region`은 장애 발생 시 함께 재시작되어야 하는 Task들의 최소 집합체
+- Task 하나가 실패하면 Job 전체를 재시작 하는게 아니라 해당 Task가 속한 `Failover Region`만 재시작
+- Forward(1:1)로 연결된 Task들은 같은 Region
+- Shuffle(KeyBy, Rebalance) 지점에서 Region이 분리됨
+
+#### 💡 Region을 나누는 기준
+
+- 데이터 교환 방식에 따라 나뉨
+- 상태(`state`)를 강하게 공유하는 Task들은 같은 Region
+
+<br>
+
+### 5-3. 재시작 대상 지역 선정 기준
+
+#### 규칙 1
+
+- 작업이 실패한 영역이 다시 시작됨
+
+#### 규칙 2
+
+- 재시작될 영역에서 필요한 결과 파티션을 사용할 수 없는 경우 결과 파티션을 생성하는 해당 영역도 재시작됨
+- 즉, Region A가 재시작하려고 보니 이전 단계인 Region B가 만든 데이터 파티션이 이미 깨져있어 A는 B가 만든 데이터를 신뢰할 수 없기 때문에 Region B도 함께 재시작됨
+
+```txt
+[Region B] --(결과 파티션 X)--> [Region A ❌]
+```
+
+#### 규칙 3
+
+- 리전을 재시작해야 하는 경우 해당 리전의 모든 소비자 리전도 함께 재시작됨
+- 즉, **비결정적 처리**로 인해 같은 데이터를 다시 처리해도 이전과 정확히 같은 파티션이 만들어진다는 보장이 없기 때문에 소비자 리전도 재시작함
+  - 비결정적 처리란
+    - 처리 순서가 바뀔 수 있거나
+    - 병렬 처리 타이밍이 달라지거나
+    - 해시 파티셔닝 결과가 달라질 수 있는 경우
 
 <br>
 
@@ -176,5 +238,8 @@
 
 - https://nightlies.apache.org/flink/flink-docs-master/docs/ops/state/state_backends/
 - https://nightlies.apache.org/flink/flink-docs-master/docs/ops/state/disaggregated_state/
+- https://nightlies.apache.org/flink/flink-docs-release-2.2/docs/dev/datastream/overview/
+- https://nightlies.apache.org/flink/flink-docs-master/docs/ops/state/task_failure_recovery/
+- https://aws.amazon.com/ko/what-is/apache-flink/#:~:text=Flink%EB%8A%94%20%EB%86%92%EC%9D%80%20%EC%B2%98%EB%A6%AC%EB%9F%89%2C%20%EB%82%AE%EC%9D%80,%EC%9D%B4%EC%83%81%EC%9D%98%20%EB%8C%80%EC%83%81%EC%9C%BC%EB%A1%9C%20%EC%A0%84%EC%86%A1%EB%90%A9%EB%8B%88%EB%8B%A4.
 
 
