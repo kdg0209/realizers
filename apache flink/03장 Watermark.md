@@ -8,8 +8,6 @@
 - 시스템에 타임스탬프가 T인 워터마크가 도착했다면, 이제 이 스트림에서 타임스탬프가 T보다 작거나 같은 이벤트는 모두 도착했다라고 가정
 - 특정 시간 범위의 데이터를 묶어 처리하는 윈도우 연산을 언제 마감하고 결과를 출력할지 결정하기 위해 사용됨
 
-### 1-1. Watermark의 전파·병합 규칙
-
 <br>
 
 ## 2. 왜 필요할까?
@@ -55,10 +53,6 @@ Watermark = maxTimestamp - maxOutOfOrderness
 - 제한된 `Out-Of-Order` 허용
 - 권장하는 전략 방식
 - **maxOutOfOrderness** 설정 값이 크면 결과 지연, 값이 작으면 Late Event 증가될 수 있음
-
-<br>
-
-### 3-3. Idle Partition 문제 (withIdleness)
 
 <br>
 
@@ -161,18 +155,9 @@ inputStream
 
 #### 💡 Allowed Lateness와 Side Output의 관계
 
-
-
-
-
-
-
-
-
-
-
-
-
+- `Late Event`는 Watermark가 닫히고 나서 도착한 이벤트
+- `Allowed Lateness`는 이미 닫힌 윈도우에 대해 `Late Event`를 다시 받아서 윈도우를 갱신해주는 것
+- 즉, `Allowed Lateness`는 윈도우를 다시 열어서 재처리를 할 수는 있지만 `Side Output`은 재처리할 수 없어 데이터를 잃지 않기 위한 처리
 
 <br>
 
