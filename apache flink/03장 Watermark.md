@@ -128,6 +128,7 @@ Watermark = maxTimestamp - maxOutOfOrderness
 - 현실 세계에서는 네트워크 지연, 재시도, 부하로 인해 이벤트 순서가 보장되지 않을 수 있음
 - Flink Window Operator는 `Allowed Lateness`라는 기능 제공
 - `Allowed Lateness`는 이미 Watermark가 흐른 뒤 Watermark가 명시한 시간보다 과거의 이벤트가 유입되더라도 특정 시간만큼 딜레이를 허용해 주는 것
+- `Allowed Lateness`를 사용하면 **Late Event**에 의해 같은 윈도우에 대한 결과가 여러번 재발행될 수 있기 때문에 외부 싱크(DB, API 호출, Kafka)에서는 재발행 이벤트를 누적하지 않도록 **명득적인 저장 방식**을 사용해 최신 결과만을 저장할 수 있도록 설계 필요
 
 ```java
 // allowedLateness(Time.hour(1)) 설정을 통해 Watermark보다 1시간 까지만 딜레이를 허용하겠다는 의미
@@ -136,6 +137,17 @@ inputStream
     .window(TumblingEventTimeWindows.of(Time.minutes(10)))
     .allowedLateness(Time.hour(1)) 
     .apply(new MyWindowFunction());
+
+// 중복 데이터 예시
+// DB에 단순히 INSERT하는 경우 (총 3건이 저장됨)
+(10:00~10:05, sum=100)
+(10:00~10:05, sum=120)
+(10:00~10:05, sum=125)
+
+// DB에 Upsert하는 경우 (최종 125로 수렴)
+처음엔 INSERT (100)
+나중엔 UPDATE (120)
+또 UPDATE (125)
 ```
 
 #### 예시
@@ -167,6 +179,7 @@ inputStream
 - https://docs.confluent.io/cloud/current/flink/concepts/timely-stream-processing.html
 - https://nightlies.apache.org/flink/flink-docs-master/docs/dev/datastream/event-time/built_in/
 - https://nightlies.apache.org/flink/flink-docs-master/docs/dev/datastream/operators/windows/#windows
+- https://westlife0615.tistory.com/680
 - https://medium.com/rate-labs/%EC%8A%A4%ED%8A%B8%EB%A6%BC-%ED%94%84%EB%A1%9C%EC%84%B8%EC%8B%B1%EC%9D%98-%EA%B8%B4-%EC%97%AC%EC%A0%95%EC%9D%84-%EC%9C%84%ED%95%9C-%EC%9D%B4%EC%A0%95%ED%91%9C-with-flink-8e3953f97986
 
 
